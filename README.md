@@ -2,7 +2,7 @@
 
 A simple command-line to-do list application written in Python.
 
-![Coverage](https://img.shields.io/badge/Coverage-100%25-brightgreen)
+![Coverage](coverage.svg)
 
 ## Features
 

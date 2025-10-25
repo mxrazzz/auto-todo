@@ -13,6 +13,9 @@ on: # ⚙️ This defines WHEN the workflow runs
 jobs: # 🧱 A workflow is made up of one or more jobs
   build: # 🧰 We'll call this job "build"
     runs-on: ubuntu-latest # 💻 This tells GitHub what OS to use in the cloud (Ubuntu VM)
+    # 🧠 Add permissions for the job to write back to the repository (needed to commit the badge)
+    permissions:
+      contents: write
 
     steps: # 📜 A job has multiple 'steps'
       # 🚀 OPTIMIZATION 1: FASTER CODE DOWNLOAD
@@ -47,27 +50,20 @@ jobs: # 🧱 A workflow is made up of one or more jobs
           pip install -r requirements.txt
         # 🧠 If the cache was restored, this step will be much faster because it will find the packages already installed.
 
-      - name: Run tests and generate coverage report
-        id: coverage # Give this step an ID so we can reference its output
+      - name: Run tests with coverage
         run: |
           # --cov=main: Tells pytest-cov to measure coverage for the 'main.py' file.
-          # --cov-report=json: Generates a 'coverage.json' file for the badge.
-          pytest --cov=main --cov-report=json
-          # Extract the coverage percentage and set it as a GitHub Actions output
-          COVERAGE=$(cat coverage.json | jq .totals.percent_covered_display)
-          echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
+          # The tj-actions/coverage-badge-py action will read the coverage output automatically.
+          pytest --cov=main
 
-      - name: Create coverage badge
-        uses: shields/generator@v2
+      - name: Generate coverage badge
+        uses: tj-actions/coverage-badge-py@v2
         with:
-          label: "Coverage"
-          message: ${{ steps.coverage.outputs.coverage }}%
-          color: "green"
-          style: "flat"
-          path: "badge.svg" # The output path for the badge SVG file
+          # The output path for the badge SVG file
+          output: coverage.svg
 
-      - name: Upload coverage badge as artifact
-        uses: actions/upload-artifact@v4
+      - name: Commit and push coverage badge
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          name: coverage-badge
-          path: badge.svg
+          commit_message: "docs: Update coverage badge"
+          file_pattern: coverage.svg
