@@ -126,3 +126,41 @@ def test_view_tasks_empty(capsys):
 
     # Step 4: Assert that the correct message is printed.
     assert "You have no tasks." in output
+
+# --- TEST FOR INVALID MENU CHOICE ---
+def test_invalid_menu_choice(monkeypatch, capsys):
+    """
+    Test that the program handles invalid menu choices correctly.
+    """
+    tasks.clear()
+    user_inputs = [
+        '5',  # Invalid choice
+        '4'   # Exit
+    ]
+    input_iterator = iter(user_inputs)
+    monkeypatch.setattr('builtins.input', lambda _: next(input_iterator))
+    
+    main()
+    
+    captured = capsys.readouterr()
+    output = captured.out
+    assert "Invalid choice. Please enter a number between 1 and 4." in output
+
+# --- TEST FOR REMOVING A TASK WITH INVALID INPUT ---
+def test_remove_task_invalid_input(monkeypatch, capsys):
+    """
+    Test that remove_task handles non-numeric input correctly.
+    """
+    tasks.clear()
+    tasks.append("Test Task")
+    
+    user_inputs = ['abc']  # Invalid input (not a number)
+    input_iterator = iter(user_inputs)
+    monkeypatch.setattr('builtins.input', lambda _: next(input_iterator))
+    
+    from main import remove_task
+    remove_task()
+    
+    captured = capsys.readouterr()
+    output = captured.out
+    assert "Invalid input. Please enter a number." in output
