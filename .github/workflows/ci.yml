@@ -1,22 +1,37 @@
-name: Python CI
+# 🧩 This is your GitHub Actions workflow file
+# Every workflow file must live inside .github/workflows/
+# The file extension is always .yml or .yaml (both work the same)
 
-on:
-  push:
-    branches: [main]
-  pull_request:
+name: Python CI # 🏷️ This is just a name for the workflow (shows up in GitHub Actions tab)
+
+on: # ⚙️ This defines WHEN the workflow runs
+  push: # 🚀 Runs every time you push new code
+    branches: [main] # 🧠 You can change this to any branch (e.g. 'dev')
+  pull_request: # 👀 Runs when someone opens or updates a pull request
     branches: [main]
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+jobs: # 🧱 A workflow is made up of one or more jobs
+  build: # 🧰 We'll call this job "build"
+    runs-on: ubuntu-latest # 💻 This tells GitHub what OS to use in the cloud (Ubuntu VM)
+
+    steps: # 📜 A job has multiple 'steps'
+      - name: Checkout code # 🪜 Step 1: Get your code into the VM
+        uses: actions/checkout@v4 # 🧰 Official GitHub action to clone your repo automatically
+
+      - name: Set up Python # 🧪 Step 2: Install Python on the runner
+        uses: actions/setup-python@v5 # 🧰 Official action that installs any Python version
         with:
-          python-version: "3.10"
-      - name: Install deps
+          python-version: "3.10" # 🧠 Always specify version — consistency matters in CI/CD
+
+      - name: Install dependencies # 📦 Step 3: If you had requirements.txt, you'd install packages here
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      - name: Run tests
-        run: pytest
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        # 🧠 This command checks if requirements.txt exists; if it does, it installs everything inside
+
+      - name: Run tests # ✅ Step 4: Run your tests or script
+        run: |
+          echo "Running tests..."
+          python main.py
+        # 🧠 For now, we'll just run main.py.
+        # Later, we’ll replace this with actual pytest tests once we write them.
