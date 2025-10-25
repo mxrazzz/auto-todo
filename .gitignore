@@ -35,3 +35,6 @@ Thumbs.db
 dist/
 build/
 *.egg-info/
+
+# Docker (keep Dockerfile and docker-compose.yml, ignore runtime files)
+.dockerignore

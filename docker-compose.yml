@@ -1,0 +1,100 @@
+# 🎼 docker-compose.yml - The Easy Button for Running Docker!
+# Think of this as a TV remote instead of manually pressing buttons on the TV
+
+# ============================================
+# WHAT IS DOCKER COMPOSE?
+# ============================================
+# Instead of typing long Docker commands like:
+#   docker build -t auto-todo .
+#   docker run -it --rm auto-todo
+# 
+# You just type: docker-compose up
+# It's that simple!
+
+# ============================================
+# SERVICES = The different apps/containers you want to run
+# ============================================
+# Note: 'version' is no longer required in modern Docker Compose
+services:
+  # Name of our service (you can call it anything)
+  app:
+    # 🏗️ BUILD: Tell Docker Compose how to build the image
+    build:
+      context: .              # "." means "use current folder"
+      dockerfile: Dockerfile  # Which recipe file to use
+    
+    # 🏷️ IMAGE NAME: What to call the built image
+    image: auto-todo:latest
+    
+    # 📦 CONTAINER NAME: What to call the running container
+    container_name: auto-todo-app
+    
+    # 🔄 RESTART POLICY: What to do if container crashes
+    # "no" = Don't restart (good for CLI apps that should exit)
+    # Other options: "always", "on-failure", "unless-stopped"
+    restart: "no"
+    
+    # 💻 INTERACTIVE MODE: Allow keyboard input (needed for CLI apps!)
+    # stdin_open = keep input stream open
+    # tty = allocate a pseudo-terminal (like opening a terminal window)
+    stdin_open: true
+    tty: true
+    
+    # 📁 VOLUMES: Connect folders between your computer and container
+    # This is like having a shared folder - changes sync both ways!
+    # Format: "host-path:container-path"
+    # volumes:
+    #   - .:/app  # Uncomment this for development (live code updates)
+    
+    # 🌍 ENVIRONMENT VARIABLES: Pass settings to the container
+    # environment:
+    #   - PYTHONUNBUFFERED=1  # See Python output immediately
+    #   - LOG_LEVEL=INFO      # Example: set log level
+    
+    # 🔐 ENV FILE: Load environment variables from a file
+    # env_file:
+    #   - .env  # Uncomment if you create a .env file
+
+# ============================================
+# HOW TO USE THIS FILE
+# ============================================
+# 
+# 🚀 Build and run:
+#   docker-compose up
+# 
+# 🔨 Just build (don't run):
+#   docker-compose build
+# 
+# 🏃 Run in background (detached):
+#   docker-compose up -d
+# 
+# 🛑 Stop the container:
+#   docker-compose down
+# 
+# 📋 See running containers:
+#   docker-compose ps
+# 
+# 📺 See logs:
+#   docker-compose logs
+# 
+# 🔄 Rebuild and run (if you changed code):
+#   docker-compose up --build
+
+# ============================================
+# FOR BEGINNERS: COMMON SCENARIOS
+# ============================================
+# 
+# Scenario 1: First time running
+#   docker-compose up
+#   → Builds image, runs container, you can interact with app
+# 
+# Scenario 2: You changed code
+#   docker-compose up --build
+#   → Rebuilds image with new code, runs container
+# 
+# Scenario 3: App is running, you want to stop it
+#   Press Ctrl+C
+#   Then: docker-compose down
+# 
+# Scenario 4: Check if it's still running
+#   docker-compose ps

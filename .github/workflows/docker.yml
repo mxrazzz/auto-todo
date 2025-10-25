@@ -1,0 +1,150 @@
+# 🐳 Docker Build & Publish Workflow
+# Automatically builds and publishes Docker images to GitHub Container Registry
+
+name: Docker Build & Publish
+
+# ============================================
+# WHEN TO RUN THIS WORKFLOW
+# ============================================
+on:
+  # Run on every push to main
+  push:
+    branches: [main]
+
+  # Run on pull requests to main
+  pull_request:
+    branches: [main]
+
+  # Run when you create a release tag (v1.0.0, v2.0.0, etc.)
+  release:
+    types: [published]
+
+  # Allow manual trigger from GitHub Actions UI
+  workflow_dispatch:
+
+# ============================================
+# PERMISSIONS NEEDED
+# ============================================
+# GitHub needs permission to publish to Container Registry
+permissions:
+  contents: read # Read code from repo
+  packages: write # Publish to GitHub Container Registry
+
+# ============================================
+# ENVIRONMENT VARIABLES (used across all jobs)
+# ============================================
+env:
+  # Registry where we'll store images (GitHub Container Registry)
+  REGISTRY: ghcr.io
+
+  # Image name format: ghcr.io/username/repo-name
+  IMAGE_NAME: ${{ github.repository }}
+
+# ============================================
+# JOBS TO RUN
+# ============================================
+jobs:
+  # Job 1: Build and optionally push the Docker image
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Download your code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Docker Buildx (advanced builder with caching)
+      # Buildx allows multi-platform builds and better caching
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Step 3: Login to GitHub Container Registry
+      # Only login if we're going to push (not on pull requests)
+      - name: Log in to Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          # GITHUB_TOKEN is automatically provided by GitHub Actions
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Step 4: Extract metadata (tags, labels) for Docker
+      # This automatically creates appropriate tags based on:
+      # - Branch name (main → latest)
+      # - Git tags (v1.0.0 → 1.0.0)
+      # - Pull request number (pr-123)
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          # Tagging strategy:
+          # - type=ref,event=branch → main branch gets 'latest' tag
+          # - type=ref,event=pr → PR #123 gets 'pr-123' tag
+          # - type=semver → v1.2.3 gets '1.2.3', '1.2', and '1' tags
+          # - type=sha → Always add git commit SHA as tag
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha
+
+      # Step 5: Build and push Docker image
+      # This is the main step that does the heavy lifting!
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          # Build context (where to find Dockerfile)
+          context: .
+
+          # Dockerfile location
+          file: ./Dockerfile
+
+          # Push image ONLY if not a pull request
+          # PRs just build to verify, but don't publish
+          push: ${{ github.event_name != 'pull_request' }}
+
+          # Tags from metadata step above
+          tags: ${{ steps.meta.outputs.tags }}
+
+          # Labels for the image (includes commit SHA, build date, etc.)
+          labels: ${{ steps.meta.outputs.labels }}
+
+          # Cache configuration for faster builds
+          # Cache FROM registry (pull previously built layers)
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
+          # Cache TO registry (save layers for next time)
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
+# ============================================
+# WHAT HAPPENS AFTER THIS RUNS?
+# ============================================
+#
+# 1. Image is published to: ghcr.io/mxrazzz/auto-todo
+#
+# 2. Anyone can pull and run it:
+#    docker pull ghcr.io/mxrazzz/auto-todo:latest
+#    docker run -it ghcr.io/mxrazzz/auto-todo:latest
+#
+# 3. Tags are created automatically:
+#    - 'latest' for main branch
+#    - '1.0.0' for v1.0.0 release
+#    - 'sha-abc1234' for specific commits
+#
+# 4. Images appear in your GitHub repo under "Packages"
+
+# ============================================
+# EXPLAIN LIKE I'M 5
+# ============================================
+#
+# Think of this like an automatic toy factory:
+#
+# 1. You push code to GitHub (deliver blueprints)
+# 2. GitHub Actions runs this workflow (factory starts)
+# 3. It builds a Docker image (assembles the toy)
+# 4. It publishes to Container Registry (puts toy in store)
+# 5. Anyone can download and use it (buy the toy)
+#
+# The cache is like keeping partially-built toys so next time
+# you don't start from scratch - you just finish what's left!
