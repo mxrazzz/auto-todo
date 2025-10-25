@@ -117,6 +117,42 @@ jobs:
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
           # Cache TO registry (save layers for next time)
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
+
+      # Step 6: Set image to public visibility
+      # By default, GitHub Container Registry packages are PRIVATE
+      # This step makes it PUBLIC so anyone can pull without authentication
+      - name: Make Docker package public
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Wait a few seconds for the package to be registered
+          sleep 5
+          
+          # Get the package name (just the repo name, lowercased)
+          PACKAGE_NAME="auto-todo"
+          
+          echo "🔓 Making package public: ${PACKAGE_NAME}"
+          
+          # Set package visibility to public using GitHub CLI
+          # This makes it accessible without authentication
+          gh api \
+            --method PATCH \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "/orgs/${{ github.repository_owner }}/packages/container/${PACKAGE_NAME}" \
+            -f visibility='public' 2>/dev/null || \
+          gh api \
+            --method PATCH \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "/users/${{ github.repository_owner }}/packages/container/${PACKAGE_NAME}" \
+            -f visibility='public' || true
+          
+          echo "✅ Package is now PUBLIC!"
+          echo "📦 Anyone can pull: docker pull ghcr.io/${{ github.repository_owner }}/${PACKAGE_NAME}:latest"
+          echo "🚀 Run with: docker run -it --rm ghcr.io/${{ github.repository_owner }}/${PACKAGE_NAME}:latest"
+
 # ============================================
 # WHAT HAPPENS AFTER THIS RUNS?
 # ============================================
