@@ -50,6 +50,22 @@ jobs: # 🧱 A workflow is made up of one or more jobs
           pip install -r requirements.txt
         # 🧠 If the cache was restored, this step will be much faster because it will find the packages already installed.
 
+      # 🎨 STEP: Code Quality Checks
+      - name: Lint with flake8
+        run: |
+          # Stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # Exit-zero treats all errors as warnings. Line length is set to 88 (Black's default)
+          flake8 . --count --exit-zero --max-line-length=88 --statistics
+        # 🧠 First command: Fail on serious errors (syntax errors, undefined variables)
+        # 🧠 Second command: Warn on style issues but don't fail the build
+
+      - name: Check formatting with black
+        run: |
+          # Check if code is formatted correctly (--check means don't modify, just report)
+          black --check .
+        # 🧠 This will fail if any file needs formatting. Run 'black .' locally to fix.
+
       - name: Run tests with coverage
         run: |
           # --cov=main: Tells pytest-cov to measure coverage for the 'main.py' file.

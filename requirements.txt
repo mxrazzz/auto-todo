@@ -3,3 +3,7 @@
 # We are also adding 'pytest-cov' to measure our test coverage.
 pytest
 pytest-cov
+
+# Linting and formatting tools
+flake8        # Checks code quality and style
+black         # Auto-formats code to be consistent

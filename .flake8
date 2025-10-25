@@ -1,0 +1,20 @@
+# Configuration file for flake8 (Python linter)
+# This file tells flake8 what rules to follow
+
+[flake8]
+# Maximum line length (88 is Black's default, so we match it)
+max-line-length = 88
+
+# Ignore certain error codes that conflict with Black's formatting
+# E203: whitespace before ':' (Black sometimes adds this)
+# W503: line break before binary operator (Black does this for readability)
+ignore = E203, W503
+
+# Don't check these folders (they're not our code)
+exclude =
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    .pytest_cache,
+    .coverage
