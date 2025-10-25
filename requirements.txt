@@ -1,0 +1,4 @@
+# This file lists the external Python packages your project needs.
+# We are adding 'pytest' here, which is a popular library for testing.
+# When GitHub Actions runs, it will automatically install everything listed in this file.
+pytest

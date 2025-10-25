@@ -2,7 +2,7 @@
 # Every workflow file must live inside .github/workflows/
 # The file extension is always .yml or .yaml (both work the same)
 
-name: Python CI # 🏷️ This is just a name for the workflow (shows up in GitHub Actions tab)
+name: Python CI with Pytest # 🏷️ This is just a name for the workflow (shows up in GitHub Actions tab)
 
 on: # ⚙️ This defines WHEN the workflow runs
   push: # 🚀 Runs every time you push new code
@@ -23,15 +23,15 @@ jobs: # 🧱 A workflow is made up of one or more jobs
         with:
           python-version: "3.10" # 🧠 Always specify version — consistency matters in CI/CD
 
-      - name: Install dependencies # 📦 Step 3: If you had requirements.txt, you'd install packages here
+      - name: Install dependencies # 📦 Step 3: Install the packages listed in requirements.txt
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        # 🧠 This command checks if requirements.txt exists; if it does, it installs everything inside
+          pip install -r requirements.txt
+        # 🧠 This command now installs pytest, which we added to our requirements file.
 
-      - name: Run tests # ✅ Step 4: Run your tests or script
+      - name: Run tests with pytest # ✅ Step 4: Run your tests
         run: |
-          echo "Running tests..."
-          python main.py
-        # 🧠 For now, we'll just run main.py.
-        # Later, we’ll replace this with actual pytest tests once we write them.
+          pytest
+        # 🧠 This is the key command. Pytest is smart and will automatically find
+        # 🧠 any files named 'test_*.py' and run the test functions inside them.
+        # 🧠 If any test fails, this step will fail, and GitHub will show a red 'X'.
