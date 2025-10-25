@@ -106,3 +106,23 @@ def test_add_task_unit(monkeypatch):
     # 2. The first item in the list should be the string "Learn Pytest".
     assert len(tasks) == 1
     assert tasks[0] == "Learn Pytest"
+
+# --- ANOTHER NEW UNIT TEST ---
+# This test focuses on the view_tasks function when there are no tasks.
+def test_view_tasks_empty(capsys):
+    """
+    Test the view_tasks function when the tasks list is empty.
+    """
+    # Step 1: Clear the tasks list to ensure it's empty.
+    tasks.clear()
+
+    # Step 2: Call the view_tasks function.
+    from main import view_tasks
+    view_tasks()
+
+    # Step 3: Capture the printed output using capsys.
+    captured = capsys.readouterr()
+    output = captured.out
+
+    # Step 4: Assert that the correct message is printed.
+    assert "You have no tasks." in output
