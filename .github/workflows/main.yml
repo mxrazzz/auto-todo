@@ -1,0 +1,75 @@
+# 🚀 MAIN CI WORKFLOW: This workflow orchestrates testing across multiple environments
+# It uses a matrix to test on different OS and Python versions simultaneously
+
+name: Multi-Environment CI
+
+# 🎯 TRIGGERS: When to run this workflow
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: # 🎮 Manual trigger button in GitHub Actions UI
+
+jobs:
+  # Job 1: Matrix Testing
+  # This job will spawn multiple parallel jobs based on the matrix
+  matrix-test:
+    # 📋 STRATEGY: Define the matrix of combinations to test
+    strategy:
+      # ❌ fail-fast: false means "don't cancel other jobs if one fails"
+      # By default, if Python 3.9 fails, GitHub cancels 3.10 and 3.11
+      # Setting this to false lets all combinations run even if some fail
+      fail-fast: false
+
+      # 🎲 MATRIX: Define the combinations
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.9", "3.10", "3.11"]
+        # This creates 6 jobs (2 OS × 3 Python = 6 combinations):
+        # 1. ubuntu-latest + Python 3.9
+        # 2. ubuntu-latest + Python 3.10
+        # 3. ubuntu-latest + Python 3.11
+        # 4. windows-latest + Python 3.9
+        # 5. windows-latest + Python 3.10
+        # 6. windows-latest + Python 3.11
+
+    # 📛 NAME: Each matrix job gets a unique name
+    # Example: "Test on ubuntu-latest with Python 3.10"
+    name: Test on ${{ matrix.os }} with Python ${{ matrix.python-version }}
+
+    # 🔄 CALL THE REUSABLE WORKFLOW
+    uses: ./.github/workflows/reusable-tests.yml
+    with:
+      # Pass matrix values as inputs to the reusable workflow
+      python-version: ${{ matrix.python-version }}
+      os: ${{ matrix.os }}
+
+  # Job 2: Summary (runs after all matrix tests complete)
+  test-summary:
+    # ⏳ Wait for all matrix-test jobs to finish
+    needs: matrix-test
+
+    # ✅ Run even if some matrix jobs failed
+    if: always()
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check test results
+        run: |
+          echo "🎉 All matrix tests have completed!"
+          echo ""
+          echo "📊 Test Summary:"
+          echo "- Total combinations tested: 6 (2 OS × 3 Python versions)"
+          echo "- Operating Systems: Ubuntu, Windows"
+          echo "- Python Versions: 3.9, 3.10, 3.11"
+          echo ""
+          echo "💡 Tip: Check individual jobs above for detailed results."
+          echo "📦 Tip: Download test reports from the Artifacts section."
+          echo ""
+          if [ "${{ needs.matrix-test.result }}" == "success" ]; then
+            echo "✅ All tests passed! 🚀"
+          else
+            echo "❌ Some tests failed. Check the failed jobs above."
+          fi
