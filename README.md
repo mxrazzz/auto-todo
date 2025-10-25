@@ -51,13 +51,28 @@ docker-compose up
 # Build the image manually
 docker build -t auto-todo .
 
-# Run the container
+# Run the container (ALWAYS use -it for interactive input!)
 docker run -it auto-todo
 
-# Pull from GitHub Container Registry (once published)
+# Run with auto-cleanup (removes container after exit)
+docker run -it --rm auto-todo
+
+# Pull from GitHub Container Registry (public - no login needed!)
 docker pull ghcr.io/mxrazzz/auto-todo:latest
-docker run -it ghcr.io/mxrazzz/auto-todo:latest
+# Or use the branch-specific tag:
+docker pull ghcr.io/mxrazzz/auto-todo:main
+
+# Run from registry (interactive mode with auto-cleanup)
+docker run -it --rm ghcr.io/mxrazzz/auto-todo:latest
+# Or:
+docker run -it --rm ghcr.io/mxrazzz/auto-todo:main
 ```
+
+**💡 Tip:** The `-it` flags are ESSENTIAL for CLI apps:
+
+- `-i` keeps input open so you can type
+- `-t` gives you a proper terminal
+- `--rm` automatically deletes the container when you exit (keeps things clean!)
 
 ### 🐍 Installation with Python
 
@@ -105,13 +120,13 @@ This project is fully containerized with Docker for consistent deployment!
 ### Docker Quick Reference
 
 ```bash
-# Build and run with Docker Compose (easiest)
+# Build and run with Docker Compose (easiest - automatically interactive!)
 docker-compose up
 
 # Rebuild after code changes
 docker-compose up --build
 
-# Run in background (detached mode)
+# Run in background (detached mode) - NOTE: Won't work for this CLI app!
 docker-compose up -d
 
 # Stop the container
@@ -123,13 +138,30 @@ docker-compose logs
 # Build manually
 docker build -t auto-todo .
 
-# Run manually (interactive mode)
+# Run manually (IMPORTANT: -it flag makes it interactive!)
+# -i = Keep STDIN open (allows input)
+# -t = Allocate a pseudo-TTY (makes it feel like a terminal)
 docker run -it auto-todo
 
-# Pull from GitHub Container Registry
-docker pull ghcr.io/mxrazzz/auto-todo:latest
+# Pull from GitHub Container Registry and run (public - no login!)
+docker pull ghcr.io/mxrazzz/auto-todo:latest  # Latest tag (recommended)
+docker pull ghcr.io/mxrazzz/auto-todo:main    # Branch-specific tag
 docker run -it ghcr.io/mxrazzz/auto-todo:latest
+
+# SHORTCUT: Pull and run in one command (if image not local)
+docker run -it --rm ghcr.io/mxrazzz/auto-todo:latest
+
+# Available tags:
+# - latest: Always points to the newest main branch build
+# - main: Branch-specific build
+# - v1.0.0: Semantic version tags (when you create releases)
+# - main-sha123abc: Git commit SHA for exact version tracking
 ```
+
+**🔑 KEY POINT:** Always use `-it` flag when running this app!
+
+- Without `-it`: Container starts but you can't type anything ❌
+- With `-it`: You can interact with the menu and add tasks ✅
 
 ### Docker Image Details
 
