@@ -47,7 +47,27 @@ jobs: # 🧱 A workflow is made up of one or more jobs
           pip install -r requirements.txt
         # 🧠 If the cache was restored, this step will be much faster because it will find the packages already installed.
 
-      - name: Run tests with pytest
+      - name: Run tests and generate coverage report
+        id: coverage # Give this step an ID so we can reference its output
         run: |
-          pytest
-        # 🧠 This command runs your tests as before.
+          # --cov=main: Tells pytest-cov to measure coverage for the 'main.py' file.
+          # --cov-report=json: Generates a 'coverage.json' file for the badge.
+          pytest --cov=main --cov-report=json
+          # Extract the coverage percentage and set it as a GitHub Actions output
+          COVERAGE=$(cat coverage.json | jq .totals.percent_covered_display)
+          echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
+
+      - name: Create coverage badge
+        uses: shields/generator@v2
+        with:
+          label: "Coverage"
+          message: ${{ steps.coverage.outputs.coverage }}%
+          color: "green"
+          style: "flat"
+          path: "badge.svg" # The output path for the badge SVG file
+
+      - name: Upload coverage badge as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-badge
+          path: badge.svg
