@@ -125,7 +125,7 @@ This project showcases modern DevOps practices:
 
 ## 📊 Project Stats
 
-- **Code Coverage:** 89%
+- **Code Coverage:** 95%
 - **Test Cases:** 5
 - **Supported Python Versions:** 3
 - **Supported Operating Systems:** 2
@@ -206,18 +206,6 @@ This project demonstrates:
 - ✅ **Artifact generation** for test reports
 - ✅ **Dependency caching** for performance
 - ✅ **Code coverage tracking** with badges
-
----
-
-## 🎯 Interview Talking Points
-
-**"Walk me through your CI/CD setup"**
-
-> "I built a complete CI/CD pipeline using GitHub Actions. Every push triggers automated tests across 6 different environments (2 operating systems × 3 Python versions) running in parallel. The pipeline enforces code quality with flake8 and black, tracks coverage with an auto-updating badge, and generates downloadable test reports. When I create a release tag, it automatically runs all checks, packages the app, and publishes it to GitHub Releases with auto-generated notes."
-
-**"How do you ensure code quality?"**
-
-> "I use a multi-layered approach: flake8 catches errors and style violations, black enforces consistent formatting, pytest provides 89% code coverage with both unit and integration tests, and matrix builds verify compatibility across different environments. All of these run automatically in CI, and the pipeline fails if any check doesn't pass."
 
 ---
 
