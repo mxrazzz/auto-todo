@@ -8,7 +8,7 @@ import sys
 from unittest.mock import patch
 
 # We import the 'main' function from your application.
-from main import main
+from main import main, tasks
 
 # --- What is 'monkeypatch'? ---
 # 'monkeypatch' is a special tool provided by pytest. It's similar to unittest.mock.patch.
@@ -45,7 +45,6 @@ def test_full_application_flow_with_pytest(monkeypatch, capsys):
 
     # --- Step 2: Run the main application ---
     # We need to make sure the task list is empty before we start.
-    from main import tasks
     tasks.clear()
     # Now, we run your 'main()' function. Monkeypatch will handle all the 'input()' calls.
     main()
@@ -79,3 +78,31 @@ def test_full_application_flow_with_pytest(monkeypatch, capsys):
 
     # Check for the exit message.
     assert "Exiting the To-Do List. Goodbye!" in output
+
+# --- A NEW UNIT TEST ---
+# This test focuses on only ONE function: add_task.
+def test_add_task_unit(monkeypatch):
+    """
+    This is a UNIT TEST. It checks only the add_task function in isolation.
+    """
+    # Step 1: Set up the test conditions.
+    # We need to make sure the tasks list is empty before we start.
+    tasks.clear()
+    
+    # Step 2: Simulate the user typing "Learn Pytest".
+    # We use monkeypatch to tell the program that the next time 'input()' is called,
+    # it should return "Learn Pytest".
+    monkeypatch.setattr('builtins.input', lambda _: "Learn Pytest")
+    
+    # Step 3: Call the function we are testing.
+    # We are NOT running the whole 'main()' application, just the single 'add_task' function.
+    # To do this, we need to import it first.
+    from main import add_task
+    add_task()
+    
+    # Step 4: Check the result.
+    # We assert two things to be sure it worked:
+    # 1. The tasks list should now contain exactly one item.
+    # 2. The first item in the list should be the string "Learn Pytest".
+    assert len(tasks) == 1
+    assert tasks[0] == "Learn Pytest"
