@@ -18,10 +18,7 @@ A simple command-line to-do list application written in Python.
 
 ### Installation
 
-1. Clone the repository:
-   ```sh
-   git clone https://github.com/your-username/auto-todo.git
-   ```
+1. Clone the repository
 2. Navigate to the project directory:
    ```sh
    cd auto-todo
