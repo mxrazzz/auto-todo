@@ -15,23 +15,39 @@ jobs: # 🧱 A workflow is made up of one or more jobs
     runs-on: ubuntu-latest # 💻 This tells GitHub what OS to use in the cloud (Ubuntu VM)
 
     steps: # 📜 A job has multiple 'steps'
-      - name: Checkout code # 🪜 Step 1: Get your code into the VM
-        uses: actions/checkout@v4 # 🧰 Official GitHub action to clone your repo automatically
-
-      - name: Set up Python # 🧪 Step 2: Install Python on the runner
-        uses: actions/setup-python@v5 # 🧰 Official action that installs any Python version
+      # 🚀 OPTIMIZATION 1: FASTER CODE DOWNLOAD
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
-          python-version: "3.10" # 🧠 Always specify version — consistency matters in CI/CD
+          fetch-depth: 1 # � This tells the action to only download the latest version of your code, not the whole history.
 
-      - name: Install dependencies # 📦 Step 3: Install the packages listed in requirements.txt
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      # 🚀 OPTIMIZATION 2: CACHING DEPENDENCIES
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          # This is the path where pip stores its cache on the runner.
+          path: ~/.cache/pip
+          # This is the unique "key" for the cache.
+          # 'runner.os' includes the OS in the key (e.g., 'Linux').
+          # 'hashFiles' creates a unique hash from your requirements.txt file.
+          # If requirements.txt changes, the key changes, and a new cache is created.
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          # This tells the cache action to restore the cache even if the key doesn't have an exact match.
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-        # 🧠 This command now installs pytest, which we added to our requirements file.
+        # 🧠 If the cache was restored, this step will be much faster because it will find the packages already installed.
 
-      - name: Run tests with pytest # ✅ Step 4: Run your tests
+      - name: Run tests with pytest
         run: |
           pytest
-        # 🧠 This is the key command. Pytest is smart and will automatically find
-        # 🧠 any files named 'test_*.py' and run the test functions inside them.
-        # 🧠 If any test fails, this step will fail, and GitHub will show a red 'X'.
+        # 🧠 This command runs your tests as before.
