@@ -80,16 +80,18 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           # Tagging strategy:
-          # - type=ref,event=branch → main branch gets 'latest' tag
+          # - type=raw,value=latest → Always create 'latest' tag for main branch
+          # - type=ref,event=branch → Branch name (main, develop, etc.)
           # - type=ref,event=pr → PR #123 gets 'pr-123' tag
           # - type=semver → v1.2.3 gets '1.2.3', '1.2', and '1' tags
-          # - type=sha → Always add git commit SHA as tag
+          # - type=sha → Always add git commit SHA as tag for traceability
           tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
             type=ref,event=branch
             type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=sha
+            type=sha,prefix={{branch}}-
 
       # Step 5: Build and push Docker image
       # This is the main step that does the heavy lifting!
@@ -128,12 +130,12 @@ jobs:
         run: |
           # Wait a few seconds for the package to be registered
           sleep 5
-          
+
           # Get the package name (just the repo name, lowercased)
           PACKAGE_NAME="auto-todo"
-          
+
           echo "🔓 Making package public: ${PACKAGE_NAME}"
-          
+
           # Set package visibility to public using GitHub CLI
           # This makes it accessible without authentication
           gh api \
@@ -148,7 +150,7 @@ jobs:
             -H "X-GitHub-Api-Version: 2022-11-28" \
             "/users/${{ github.repository_owner }}/packages/container/${PACKAGE_NAME}" \
             -f visibility='public' || true
-          
+
           echo "✅ Package is now PUBLIC!"
           echo "📦 Anyone can pull: docker pull ghcr.io/${{ github.repository_owner }}/${PACKAGE_NAME}:latest"
           echo "🚀 Run with: docker run -it --rm ghcr.io/${{ github.repository_owner }}/${PACKAGE_NAME}:latest"
